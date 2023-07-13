@@ -63,7 +63,7 @@ function Sidenav({ color }) {
               >
                 <BookOutlined />
               </span>
-              <span className="label">Product</span>
+              <span className="label">Policy</span>
             </NavLink>
           </Menu.Item>
           <Menu.Item key="3">
