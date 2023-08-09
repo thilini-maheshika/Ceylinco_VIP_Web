@@ -153,14 +153,14 @@ function SimpleTable(props) {
             sx={{ display: "flex", gap: "2rem", p: "0.5rem", flexWrap: "wrap" }}
           >
             <Typography variant="h4">{tableHeading}</Typography>
-            <Button
+            {/* <Button
               color="primary"
               onClick={() => setIsModalOpen(true)} // Open the modal
               startIcon={<AddIcon />}
               variant="contained"
             >
               Add User
-            </Button>
+            </Button> */}
 
             <Button
               color="primary"
@@ -182,7 +182,7 @@ function SimpleTable(props) {
           </Box>
         )}
         enableEditing
-        enablePagination={false}
+        enablePagination={true}
         editingMode="row"
         enableRowSelection
         enableColumnOrdering

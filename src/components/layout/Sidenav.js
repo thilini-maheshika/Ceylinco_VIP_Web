@@ -54,11 +54,11 @@ function Sidenav({ color }) {
             </NavLink>
           </Menu.Item>
           <Menu.Item key="2">
-            <NavLink to="/item">
+            <NavLink to="/policy">
               <span
                 className="icon"
                 style={{
-                  background: page === "item" ? color : "",
+                  background: page === "policy" ? color : "",
                 }}
               >
                 <BookOutlined />
