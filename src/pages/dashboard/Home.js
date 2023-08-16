@@ -167,7 +167,8 @@ function Home() {
       <div className="layout-content">
         {localStorage.getItem('author') === 'admin' ?
           <Row className="rowgap-vbox" gutter={[24, 0]}>
-            {count.map((c, index) => (
+            <h1>Welcome! Ceylinco Collector</h1>
+            {/* {count.map((c, index) => (
               <Col
                 key={index}
                 xs={24}
@@ -193,12 +194,12 @@ function Home() {
                   </div>
                 </Card>
               </Col>
-            ))}
+            ))} */}
           </Row>
 
           :
           <Row className="rowgap-vbox" gutter={[24, 0]}>
-            {AuthorCount.map((c, index) => (
+            {/* {AuthorCount.map((c, index) => (
               <Col
                 key={index}
                 xs={24}
@@ -224,7 +225,7 @@ function Home() {
                   </div>
                 </Card>
               </Col>
-            ))}
+            ))} */}
           </Row>
         }
       </div>

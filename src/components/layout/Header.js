@@ -1,13 +1,16 @@
 import {
-  LogoutOutlined
+  BellOutlined,
+  LogoutOutlined, UserOutlined
 } from "@ant-design/icons";
 import {
-  Breadcrumb, Button, Col, Drawer, Row, Switch, Typography
+  Breadcrumb, Button, Col, Drawer, Dropdown, Menu, Row, Switch, Typography
 } from "antd";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useHistory } from 'react-router-dom';
 import styled from "styled-components";
-import { isAuthenticated, logout, getToken } from "../../session";
+import Axios from 'axios';
+import config from '../../config';
+import { isAuthenticated, logout, getToken, getUserid } from "../../session";
 
 const ButtonContainer = styled.div`
   .ant-btn-primary {
@@ -49,7 +52,6 @@ const logsetting = [
   </svg>,
 ];
 
-
 const toggler = [
   <svg
     width="20"
@@ -63,6 +65,25 @@ const toggler = [
 ];
 
 
+const profileIcon = (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 1024 1024"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    key={2}
+  >
+    <path
+      d="M512 960C274.18 960 80 765.82 80 528S274.18 96 512 96s432 194.18 432 432-194.18 432-432 432z m0-768c-141.38 0-256 114.62-256 256s114.62 256 256 256 256-114.62 256-256-114.62-256-256-256z m0 0c-70.576 0-128 57.424-128 128s57.424 128 128 128 128-57.424 128-128-57.424-128-128-128z"
+      fill="#111827"
+    />
+  </svg>
+);
+
+
+
+
 function Header({
   placement,
   name,
@@ -74,6 +95,7 @@ function Header({
 }) {
   const { Title, Text } = Typography;
   const history = useHistory();
+  const [userData, setUserData] = useState([]);
 
   const handleLogout = () => {
     logout();
@@ -84,8 +106,45 @@ function Header({
   useEffect(() => {
     if (!isAuthenticated()) {
       history.push('/sign-in');
+    }else{
+      fetchData();
+
+      // Periodic data refresh every 5 minutes
+      const interval = setInterval(fetchData, 5 * 60 * 1000);
+  
+      // Clean up the interval on component unmount
+      return () => {
+        clearInterval(interval);
+      };
     }
-  },[history])
+  }, [history])
+
+
+  const fetchData = async () => {
+    const currentUserID = getUserid();
+    console.log(currentUserID);
+    try {
+      const response = await Axios.get(config.url + '/user/' + currentUserID, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-token': getToken(),
+        },
+      });
+
+
+      if (response.status === 200) {
+        setUserData(response.data);
+      } else {
+        fetchData();
+      }
+    } catch (error) {
+      if (error.response.status === 401) {
+        window.location.reload();
+        logout();
+      }
+    } finally {
+    }
+  };
 
 
   const [visible, setVisible] = useState(false);
@@ -96,26 +155,33 @@ function Header({
   const showDrawer = () => setVisible(true);
   const hideDrawer = () => setVisible(false);
 
+
+  const menu = (
+    <Menu style={{ padding: '10px', minWidth: '160px' }}>
+      <Menu.Item onClick={handleLogout} key="logout">
+        <LogoutOutlined style={{ paddingRight: '8px' }} /> Logout
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="profile">
+        <Link to="/profile">
+          <UserOutlined style={{ paddingRight: '8px' }} /> Profile
+        </Link>
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <>
       <Row gutter={[24, 0]}>
         <Col span={24} md={6}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <NavLink to="/">Pages</NavLink>
+              <NavLink to="/">Dashboard</NavLink>
             </Breadcrumb.Item>
             <Breadcrumb.Item style={{ textTransform: "capitalize" }}>
               {name.replace("/", "")}
             </Breadcrumb.Item>
           </Breadcrumb>
-          <div className="ant-page-header-heading">
-            <span
-              className="ant-page-header-heading-title"
-              style={{ textTransform: "capitalize" }}
-            >
-              {subName.replace("/", "")}
-            </span>
-          </div>
         </Col>
         <Col span={24} md={18} className="header-control">
           <Button type="link" onClick={showDrawer}>
@@ -139,94 +205,27 @@ function Header({
             <div layout="vertical">
               <div className="header-top">
                 <Title level={4}>
-                  Configurator
-                  <Text className="subtitle">See our dashboard options.</Text>
+                  Settings
                 </Title>
               </div>
 
-              <div className="sidebar-color">
-                <Title level={5}>Sidebar Color</Title>
-                <div className="theme-color mb-2">
-                  <ButtonContainer>
-                    <Button
-                      type="primary"
-                      onClick={() => handleSidenavColor("#1890ff")}
-                    >
-                      1
-                    </Button>
-                    <Button
-                      type="success"
-                      onClick={() => handleSidenavColor("#52c41a")}
-                    >
-                      1
-                    </Button>
-                    <Button
-                      type="danger"
-                      onClick={() => handleSidenavColor("#d9363e")}
-                    >
-                      1
-                    </Button>
-                    <Button
-                      type="yellow"
-                      onClick={() => handleSidenavColor("#fadb14")}
-                    >
-                      1
-                    </Button>
 
-                    <Button
-                      type="black"
-                      onClick={() => handleSidenavColor("#111")}
-                    >
-                      1
-                    </Button>
-                  </ButtonContainer>
-                </div>
-
-                <div className="sidebarnav-color mb-2">
-                  <Title level={5}>Sidenav Type</Title>
-                  <Text>Choose between 2 different sidenav types.</Text>
-                  <ButtonContainer className="trans">
-                    <Button
-                      type={sidenavType === "transparent" ? "primary" : "white"}
-                      onClick={() => {
-                        handleSidenavType("transparent");
-                        setSidenavType("transparent");
-                      }}
-                    >
-                      TRANSPARENT
-                    </Button>
-                    <Button
-                      type={sidenavType === "white" ? "primary" : "white"}
-                      onClick={() => {
-                        handleSidenavType("#fff");
-                        setSidenavType("white");
-                      }}
-                    >
-                      WHITE
-                    </Button>
-                  </ButtonContainer>
-                </div>
-                <div className="fixed-nav mb-2">
-                  <Title level={5}>Navbar Fixed </Title>
-                  <Switch onChange={(e) => handleFixedNavbar(e)} />
-                </div>
-
-              </div>
             </div>
           </Drawer>
+
+          <Dropdown overlay={menu} placement="bottomRight">
+            <Button type="link">
+              {profileIcon}
+            </Button>
+          </Dropdown>
+
           {isAuthenticated ?
-            <>
-              <Link onClick={handleLogout} className="btn-sign-in">
-                <span style={{ fontSize: '15px' }}>Logout <LogoutOutlined style={{ marginLeft: 5 }} /></span>
-              </Link>
-              <Link className="btn-sign-in">
-                <span style={{ fontSize: '15px' }}><Title level={5} type="dark">Welcome! {localStorage.getItem('author')}</Title></span>
-              </Link>
+            <> 
+              {userData.map((data) => (<Link to="/profile" className="menubar-right-side btn-sign-in"><span>{data.fullname}</span></Link>))} {/* use-rname button */}
+              Welcome! 
             </>
             :
-            <Link to="/sign-in" className="btn-sign-in">
-              <span>Sign in </span>
-            </Link>
+            <Link to="/sign-in" className="btn-sign-in"><span>Sign in </span></Link>
           }
         </Col>
       </Row>

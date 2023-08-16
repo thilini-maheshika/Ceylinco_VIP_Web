@@ -1,6 +1,6 @@
 // import { useState } from "react";
 import {
-  BookOutlined, ContactsOutlined, BorderInnerOutlined, DollarOutlined, DownloadOutlined, SettingOutlined, TeamOutlined, UserAddOutlined, UserOutlined
+  BookOutlined, ContactsOutlined, BorderInnerOutlined, DollarOutlined, DownloadOutlined, SettingOutlined, TeamOutlined, UserAddOutlined, UserOutlined, SolutionOutlined, UserSwitchOutlined
 } from '@ant-design/icons';
 import { Menu } from "antd";
 import { useEffect, useState } from "react";
@@ -22,10 +22,10 @@ function Sidenav({ color }) {
 
   return (
     <>
-      <div className="brand ">
-        <h1><span>Ceylinco-VIP Dashboard</span></h1>
-      </div>
-      <hr />
+      {/* <div className="brand ">
+        <h1><span>Ceylinco Collector</span></h1>
+      </div> */}
+      {/* <hr /> */}
         <Menu theme="dark" mode="inline">
           <Menu.Item key="1">
             <NavLink to="/dashboard">
@@ -41,16 +41,29 @@ function Sidenav({ color }) {
             </NavLink>
           </Menu.Item>
           <Menu.Item key="2">
-            <NavLink to="/customer">
+            <NavLink to="/company">
               <span
                 className="icon"
                 style={{
-                  background: page === "customer" ? color : "",
+                  background: page === "company" ? color : "",
                 }}
               >
-                <UserOutlined />
+                <SolutionOutlined />
               </span>
-              <span className="label">Customer</span>
+              <span className="label">Company</span>
+            </NavLink>
+          </Menu.Item>
+          <Menu.Item key="7">
+            <NavLink to="/payment">
+              <span
+                className="icon"
+                style={{
+                  background: page === "payment" ? color : "",
+                }}
+              >
+                <DollarOutlined />
+              </span>
+              <span className="label">Payments</span>
             </NavLink>
           </Menu.Item>
           <Menu.Item key="2">
@@ -80,29 +93,16 @@ function Sidenav({ color }) {
             </NavLink>
           </Menu.Item>
           <Menu.Item key="4">
-            <NavLink to="/category">
+            <NavLink to="/dealer">
               <span
                 className="icon"
                 style={{
-                  background: page === "category" ? color : "",
+                  background: page === "dealer" ? color : "",
                 }}
               >
                 <BorderInnerOutlined />
               </span>
-              <span className="label">Category</span>
-            </NavLink>
-          </Menu.Item>
-          <Menu.Item key="5">
-            <NavLink to="/supplier">
-              <span
-                className="icon"
-                style={{
-                  background: page === "supplier" ? color : "",
-                }}
-              >
-                <BorderInnerOutlined />
-              </span>
-              <span className="label">Supplier</span>
+              <span className="label">Dealer</span>
             </NavLink>
           </Menu.Item>
           <Menu.Item key="6">
@@ -113,38 +113,11 @@ function Sidenav({ color }) {
                   background: page === "user" ? color : "",
                 }}
               >
-                <UserAddOutlined />
+                <UserSwitchOutlined />
               </span>
               <span className="label">User</span>
             </NavLink>
           </Menu.Item>
-          <Menu.Item key="7">
-            <NavLink to="/payment">
-              <span
-                className="icon"
-                style={{
-                  background: page === "payment" ? color : "",
-                }}
-              >
-                <DollarOutlined />
-              </span>
-              <span className="label">Payments</span>
-            </NavLink>
-          </Menu.Item>
-          <Menu.Item key="8">
-            <NavLink to="/contact">
-              <span
-                className="icon"
-                style={{
-                  background: page === "contact" ? color : "",
-                }}
-              >
-                <ContactsOutlined />
-              </span>
-              <span className="label">Contact</span>
-            </NavLink>
-          </Menu.Item>
-          
         </Menu>
     </>
   );

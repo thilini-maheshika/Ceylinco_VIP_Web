@@ -9,8 +9,9 @@ import SimpleTable from '../../components/Table/SimpleTable';
 
 
 
-const Users = () => {
-  const [userList, setUserList] = useState([]);
+const Dealers = () => {
+  const [dealerList, setdealerList] = useState([]);
+  const [companyList, setCompanyList] = useState([]);
   const [isLoading, setisLoading] = useState(true);
 
   useEffect(() => {
@@ -21,13 +22,18 @@ const Users = () => {
 
   const fetchData = async () => {
     try {
-      const [usersResponse] =
+      const [dealerResponse, companyResponse] =
         await Promise.all([
-          Axios.get(config.url + '/user/all', { headers: { 'x-token': getToken() } }),
+          Axios.get(config.url + '/dealer/dash/all', { headers: { 'x-token': getToken() } }),
+          Axios.get(config.url + '/company/all', { headers: { 'x-token': getToken() } }),
         ]);
 
-      if (usersResponse.status === 200) {
-        setUserList(usersResponse.data);
+      if (dealerResponse.status === 200) {
+        setdealerList(dealerResponse.data);
+      }
+
+      if (companyResponse.status === 200) {
+        setCompanyList(companyResponse.data);
       }
     } catch (error) {
       handleErrorResponse(error);
@@ -57,10 +63,11 @@ const Users = () => {
 
   const columns = useMemo(() => [
     {
-      accessorKey: 'fullname',
+      accessorKey: 'dealer_fullname',
       header: 'Full Name',
       export: true,
       enableColumnActions: true,
+      enableEditing: true,
       minSize: 90,
       maxSize: 360,
       size: 150,
@@ -72,7 +79,7 @@ const Users = () => {
       },
     },
     {
-      accessorKey: 'address',
+      accessorKey: 'dealer_address',
       header: 'Address',
       export: true,
       enableEditing: true,
@@ -88,10 +95,26 @@ const Users = () => {
       },
     },
     {
-      accessorKey: 'email',
-      header: 'Email',
+      accessorKey: 'dealer_nic',
+      header: 'NIC',
       export: true,
       enableEditing: true,
+      enableColumnActions: true,
+      minSize: 90,
+      maxSize: 360,
+      size: 160,
+      formFeild: {
+        isFormFeild: true,
+        type: "TextField",
+        xs: 12,
+        validationType: "requiredField"
+      },
+    },
+    {
+      accessorKey: 'dealer_email',
+      header: 'Email',
+      export: true,
+      enableEditing: false,
       enableColumnActions: true,
       minSize: 90,
       maxSize: 360,
@@ -104,8 +127,24 @@ const Users = () => {
       },
     },
     {
-      accessorKey: 'phonenumber',
+      accessorKey: 'dealer_phone',
       header: 'Mobile',
+      export: true,
+      enableEditing: false,
+      enableColumnActions: true,
+      minSize: 50,
+      maxSize: 50,
+      size: 50,
+      formFeild: {
+        isFormFeild: true,
+        type: "TextField",
+        xs: 6,
+        validationType: "mobile"
+      },
+    },
+    {
+      accessorKey: 'dealer_whatsapp_number',
+      header: 'Whatsapp Number',
       export: true,
       enableEditing: true,
       enableColumnActions: true,
@@ -120,25 +159,17 @@ const Users = () => {
       },
     },
     {
-      accessorKey: 'userrole',
-      header: 'User Role',
-      export: true,
+      accessorKey: 'company_id',
+      header: 'Company',
+      export: false,
       enableEditing: true,
       enableColumnActions: true,
       minSize: 90,
       maxSize: 360,
       size: 180,
       Cell: ({ renderedCellValue }) => {
-        let value = ""; // Use let instead of const for reassignment
-        if (renderedCellValue === 1 ) {
-          value = "Admin";
-        }else if(renderedCellValue === 0){
-          value = "Editor";
-        }else{
-          value = "Not found";
-        }
-      
-        return <>{value}</>; // Return the JSX element with the value
+        const CompanyName = companyList.find(company => company.company_id === renderedCellValue)?.company_name;
+        return <>{CompanyName ? CompanyName : "Unknown"}</>;
       },
       editVariant: 'select',
       formFeild: {
@@ -147,32 +178,8 @@ const Users = () => {
         xs: 6,
         validationType: "requiredField"
       },
-      editSelectOptions: [{
-        value: '1',
-        text: 'Admin'
-      }, {
-        value: '0',
-        text: 'User'
-      }],
-      // editSelectOptions: userRole.map((usrRole) => ({ value: usrRole.userroleid, text: usrRole.role })),
+      editSelectOptions: companyList.map((company) => ({ value: company.company_id, text: company.company_name })),
     },
-    {
-      accessorKey: 'username',
-      header: 'User Name',
-      export: true,
-      enableEditing: true,
-      enableColumnActions: true,
-      minSize: 50,
-      maxSize: 50,
-      size: 50,
-      formFeild: {
-        isFormFeild: true,
-        type: "TextField",
-        xs: 12,
-        validationType: "requiredField"
-      },
-    },
-
     {
       accessorKey: 'status',
       header: 'Status',
@@ -192,7 +199,26 @@ const Users = () => {
         isFormFeild: false,
       },
     },
-  ], []);
+    {
+      accessorKey: 'reg_date',
+      header: 'Register Date',
+      editVariant: 'select',
+      enableEditing:false,
+      minSize: 90,
+      maxSize: 360,
+      size: 100,
+      editSelectOptions: [{
+        value: '1',
+        text: 'Active'
+      }, {
+        value: '0',
+        text: 'Deactive'
+      }],
+      formFeild: {
+        isFormFeild: false,
+      },
+    },
+  ], [companyList]);
 
   const handleSubmit = async (formData) => {
     const { data } = formData; // Extract the form data
@@ -209,7 +235,7 @@ const Users = () => {
       return;
     } else {
 
-      const usersData = {
+      const dealerData = {
         fullname: data.fullname,
         phonenumber: data.phonenumber,
         address: data.address,
@@ -220,7 +246,7 @@ const Users = () => {
       };
       try {
         // Call the addData function with the extracted data
-        await addData(usersData);
+        await addData(dealerData);
         // Additional logic after successful post
       } catch (error) {
         toast.warn(error.response.data.error, {
@@ -240,7 +266,7 @@ const Users = () => {
   const addData = async (values) => {
     try {
       setisLoading(true);
-      const response = await Axios.post(config.url + '/user/create/', values, {
+      const response = await Axios.post(config.url + '/dealer/create/', values, {
         headers: {
           'Content-Type': 'application/json',
           'x-token': getToken()
@@ -304,11 +330,12 @@ const Users = () => {
   };
 
 
-  const updateData = async (userid, values) => {
+  const updateData = async (dealer_id, values) => {
+    console.log(values)
     try {
       setisLoading(true);
 
-      const response = await Axios.put(config.url + '/user/update/' + userid, values, {
+      const response = await Axios.put(config.url + '/dealer/dash/update/' + dealer_id, values, {
         headers: {
           'Content-Type': 'application/json',
           'x-token': getToken()
@@ -359,11 +386,11 @@ const Users = () => {
         const idArray = dataArray.map(data => data.id);
 
         const data = {
-          userIds: idArray
+          dealer_ids: idArray
         };
 
         const response = await Axios.put(
-          config.url + '/user/delete/',
+          config.url + '/dealer/dash/deletes',
           data,
           {
             headers: {
@@ -428,19 +455,19 @@ const Users = () => {
         <Row gutter={[22, 0]}>
           <Col xs={24} xl={24}>
             <SimpleTable
-              tableHeading="Users"
+              tableHeading="Dealers"
               columns={columns}
-              dataSet={userList}
+              dataSet={dealerList}
               isLoading={isLoading}
-              idName="userid"
+              idName="dealer_id"
               handleSaveRow={handleSaveRow}
               // handlePrint={handlePrint}
               deletedata={deletedata}
               enableClickToCopy
               enableRowNumbers={false}
               enableRowVirtualization
-              addButtonHeading="Add User"
-              enableAddButton={true}
+              addButtonHeading="Add Dealer"
+              enableAddButton={false}
               handleSubmit={handleSubmit}
             />
           </Col>
@@ -450,4 +477,4 @@ const Users = () => {
   )
 }
 
-export default Users
+export default Dealers

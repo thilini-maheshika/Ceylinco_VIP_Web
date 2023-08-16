@@ -1,254 +1,212 @@
-import React, { useState, useRef } from "react";
-import { MaterialReactTable } from "material-react-table";
-import {
-  Box,
-  Modal,
-  ThemeProvider,
-  Typography,
-  Button,
-  Select,
-  MenuItem,
-  TextField,
-  FormControl,
-  InputLabel,
-  FormControlLabel,
-  handleOpenModal,
-} from "@mui/material";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { ExportToCsv } from "export-to-csv";
-import { createTheme } from "@mui/material/styles";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import { Checkbox, Form, Input } from "antd";
+import React, { useState, useRef, useEffect } from 'react';
+import { MaterialReactTable } from 'material-react-table';
+import { toast } from 'react-toastify';
+import { Box, Button, IconButton, MenuItem, ThemeProvider, Tooltip, Typography } from '@mui/material';
+import { ExportToCsv } from 'export-to-csv';
+import { createTheme } from '@mui/material/styles';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import AddFormModal from '../Modal/AddFormModal';
 
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
-const { Option } = Select;
 
 function SimpleTable(props) {
-  const [rowSelection, setRowSelection] = useState({});
-  const tableInstanceRef = useRef(null);
+    const [rowSelection, setRowSelection] = useState({});
+    const tableInstanceRef = useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
 
-  const {
-    columns,
-    getData,
-    isLoading,
-    enableClickToCopy,
-    enableRowNumbers,
-    enableRowVirtualization,
-    tableHeading,
-    idName,
-    isModalOpen,
-    setIsModalOpen,
-  } = props;
+    const {
+        columns,
+        dataSet,
+        isLoading,
+        enableClickToCopy,
+        enableRowNumbers,
+        idName,
+        tableHeading,
+        addButtonHeading,
+        handleSubmit,
+        enableAddButton,
+        enableGroup,
+    } = props;
 
-  const [open, setOpen] = React.useState(false);
-  const [formData, setFormData] = useState({});
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-
-  const csvOptions = {
-    fieldSeparator: ",",
-    quoteStrings: '"',
-    decimalSeparator: ".",
-    showLabels: true,
-    useBom: true,
-    useKeysAsHeaders: false,
-    headers: columns.map((c) => c.header),
-  };
-
-  const csvExporter = new ExportToCsv(csvOptions);
-
-  const handleExportRows = (rows) => {
-    const data = rows.map((row) => {
-      const { fullname, trndate, status } = row.original;
-      const formattedStatus = status === 1 ? "Active" : "Deactive";
-      return { fullname, trndate, status: formattedStatus };
+    const [formData, setFormData] = useState({
+        data: {},
+        errors: {},
     });
 
-    csvExporter.generateCsv(data);
-  };
+    const handleExportData = () => {
+        if (dataSet) {
+            const headersList = columns
+                .filter((column) => column.accessorKey && column.export) // Filter out columns without headers
+                .map((column) => column.accessorKey); // Get the headers of the remaining columns
 
-  const handleExportData = () => {
-    const data = getData.map((item) => {
-      const { fullname, trndate, status } = item;
-      const formattedStatus = status === 1 ? "Active" : "Deactive";
-      return { fullname, trndate, status: formattedStatus };
+
+            const data = dataSet.map((item) => {
+                const rowData = {};
+
+                // Iterate over the columns with headers and include their values in the rowData object
+                headersList.forEach((header) => {
+                    if (header === 'status') {
+                        const formattedStatus = item[header] === 1 ? 'Active' : 'Deactive';
+                        rowData[header] = formattedStatus;
+                    } else {
+                        rowData[header] = item[header];
+                    }
+                });
+
+
+                // const formattedStatus = item.supplier_status === 1 ? 'Active' : 'Deactive';
+                // rowData.status = formattedStatus;
+
+                return rowData;
+            });
+
+
+            const csvOptions = {
+                fieldSeparator: ',',
+                quoteStrings: '"',
+                decimalSeparator: '.',
+                showLabels: true,
+                useBom: true,
+                useKeysAsHeaders: false,
+                headers: headersList,
+            };
+
+            const csvExporter = new ExportToCsv(csvOptions);
+            csvExporter.generateCsv(data);
+
+        } else {
+            toast.warn('No Data Found', {
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+              });
+        }
+    };
+
+
+    const theme = createTheme({
+        palette: {
+            mode: 'light'
+        },
     });
 
-    csvExporter.generateCsv(data);
-  };
+    const handleOpen = () => {
+        setIsOpen(true);
+    };
 
-  const theme = createTheme({
-    palette: {
-      mode: "light",
-      primary: {
-        main: "#fff",
-      },
-      background: {
-        default: "#fff",
-      },
-      secondary: {
-        main: "#fff",
-      },
-    },
-    components: {
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            "& .MuiOutlinedInput-root": {
-              "&:hover fieldset": {
-                borderColor: "#1890ff",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#1890ff",
-              },
-            },
-          },
-        },
-      },
-      MuiInputLabel: {
-        styleOverrides: {
-          root: {
-            "&.Mui-focused": {
-              color: "#1890ff",
-            },
-          },
-        },
-      },
-    },
-  });
+    const handleClose = () => {
+        setIsOpen(false);
+        setFormData({
+            data: {},
+            errors: {},
+        });
+    };
 
-  return (
-    <ThemeProvider theme={theme}>
-      <MaterialReactTable
-        columns={columns}
-        data={getData}
-        getRowId={(row) => row[idName]}
-        renderTopToolbarCustomActions={({ table }) => (
-          <Box
-            sx={{ display: "flex", gap: "2rem", p: "0.5rem", flexWrap: "wrap" }}
-          >
-            <Typography variant="h4">{tableHeading}</Typography>
-            {/* <Button
-              color="primary"
-              onClick={() => setIsModalOpen(true)} // Open the modal
-              startIcon={<AddIcon />}
-              variant="contained"
-            >
-              Add User
-            </Button> */}
 
-            <Button
-              color="primary"
-              onClick={handleClickOpen}
-              startIcon={<DeleteIcon />}
-              variant="contained"
-            >
-              Delete
-            </Button>
+    const formSubmit = (event) => {
+        event.preventDefault();
+        handleSubmit(formData);
+        handleClose();
+    };
 
-            <Button
-              color="primary"
-              onClick={handleExportData}
-              startIcon={<FileDownloadIcon />}
-              variant="contained"
-            >
-              Excel
-            </Button>
-          </Box>
-        )}
-        enableEditing
-        enablePagination={true}
-        editingMode="row"
-        enableRowSelection
-        enableColumnOrdering
-        state={{
-          isLoading: isLoading,
-        }}
-        onEditingRowSave={props.handleSaveRow}
-        enableColumnActions={false}
-        enableClickToCopy={enableClickToCopy}
-        enableRowNumbers={enableRowNumbers}
-        enableRowVirtualization={enableRowVirtualization}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: row.getToggleSelectedHandler(),
-          sx: {
-            cursor: "pointer",
-          },
-        })}
-        tableInstanceRef={tableInstanceRef}
-      />
-      <Dialog
-        open={open}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={handleClose}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle style={{ color: "Black" }}>
-          {"Delete Records?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
-            When you select "Yes," selected records will be deleted. Are you
-            sure you want to continue?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            style={{ color: "Black" }}
-            variant="outlined"
-            onClick={handleClose}
-          >
-            Cancel
-          </Button>
-          <div>
-            <Button
-              color="primary"
-              onClick={async () => {
-                const selectedRows =
-                  tableInstanceRef.current?.getSelectedRowModel().rows;
-                if (selectedRows && selectedRows.length > 0) {
-                  await props.deletedata(selectedRows);
-                  handleClose(); // Close the dialog after successful deletion
-                } else {
-                  console.log("No rows selected.");
-                }
-              }}
-              startIcon={<DeleteIcon />}
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </div>
-        </DialogActions>
-      </Dialog>
-    </ThemeProvider>
-  );
+    const handleSaveRow = ({ exitEditingMode, row, values }) => {
+        // console.log("ROW" + JSON.stringify(row))
+        const rowDataID = row.id;
+        props.handleSaveRow({ exitEditingMode, rowDataID, values });
+    };
+
+
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 10, //customize the default page size
+    });
+
+    useEffect(() => {
+        //do something when the pagination state changes
+    }, [pagination.pageIndex, pagination.pageSize]);
+
+    const handleDeleteRow = (row) => {
+        console.log(row)
+    }
+
+    return (
+        <ThemeProvider theme={theme}>
+            <MaterialReactTable
+                columns={columns}
+                data={dataSet}
+                onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
+                initialState={{ density: 'compact' }}
+                getRowId={(row) => row[idName]}
+                renderTopToolbarCustomActions={({ table }) => (
+                    <Box sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}>
+
+                        {addButtonHeading !== undefined && enableAddButton && (
+                            <div>
+                                <Button style={{ color: '#ffffff', backgroundColor: '#2b3642' }} onClick={handleOpen} startIcon={<AddOutlinedIcon />} variant="contained">
+                                    Add
+                                </Button>
+                            </div>
+                        )}
+
+                        <div>
+                            <Button
+                                style={{ color: '#ffffff', backgroundColor: '#2b3642' }}
+                                onClick={() => {
+                                    props.deletedata(tableInstanceRef.current?.getSelectedRowModel().rows);
+                                }}
+                                startIcon={<DeleteOutlineOutlinedIcon />}
+                                variant="contained"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+
+                        <div>
+                            <Button style={{ color: '#ffffff', backgroundColor: '#2b3642' }} onClick={handleExportData} startIcon={<FileDownloadOutlinedIcon />} variant="contained">
+                                CSV
+                            </Button>
+                        </div>
+
+                        <Typography variant="h4">{tableHeading}</Typography>
+                    </Box>
+                )}
+                enableEditing
+                enablePagination={true}
+                positionPagination="top"
+                editingMode="row"
+                enableRowSelection
+                state={{
+                    isLoading: isLoading,
+                    pagination
+                }}
+
+                onEditingRowSave={handleSaveRow}
+                enableClickToCopy={enableClickToCopy}
+                enableRowNumbers={enableRowNumbers}
+                tableInstanceRef={tableInstanceRef}
+                enableRowActions={props.rowAction}
+                renderRowActionMenuItems={props.renderRowActionMenuItems}
+            />
+            {isOpen && (
+                <AddFormModal
+                    enableAddButton={enableAddButton}
+                    columns={columns}
+                    formData={formData}
+                    isOpen={isOpen}
+                    addButtonHeading={addButtonHeading}
+                    setFormData={setFormData}
+                    formSubmit={formSubmit}
+                    handleClose={handleClose}
+                    dataSet={dataSet}
+                    idName={idName}
+                />
+            )}
+        </ThemeProvider>
+    );
 }
 
 export default SimpleTable;
