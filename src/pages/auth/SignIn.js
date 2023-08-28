@@ -6,7 +6,7 @@ import bgSignupImage from '../../assets/images/img-signin.jpg';
 import Axios from 'axios';
 import React, { useState } from "react";
 import { Link, useHistory } from 'react-router-dom';
-import { setToken, isAuthenticated, isLogged, setUserid, getUserid } from "../../session";
+import { setToken, getToken, isLogged, setUserid, setUserrole, isAuthenticated } from "../../session";
 
 import config from '../../config';
 
@@ -29,6 +29,9 @@ function SignIn() {
         console.log(response.data);
         setToken(response.data.token);
         setUserid(response.data.userid);
+        setUserrole(response.data.userrole);
+
+        console.log(getToken())
 
         if (isLogged) {
           setSuccess(true);
@@ -48,6 +51,8 @@ function SignIn() {
     console.log("Failed:", errorInfo);
   };
 
+
+  const currentYear = new Date().getFullYear();
 
   return (
     <>
@@ -126,7 +131,7 @@ function SignIn() {
         <Footer>
           <p className="copyright">
             {" "}
-            © 2021. Copyright : Book Tour
+            Copyright © {currentYear}. Ceylinco Collector
           </p>
         </Footer>
       </Layout>

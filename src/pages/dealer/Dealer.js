@@ -63,6 +63,22 @@ const Dealers = () => {
 
   const columns = useMemo(() => [
     {
+      accessorKey: 'dealer_id',
+      header: '#',
+      export: true,
+      enableColumnActions: true,
+      enableEditing: true,
+      minSize: 90,
+      maxSize: 360,
+      size: 150,
+      formFeild: {
+        isFormFeild: true,
+        type: "TextField",
+        xs: 12,
+        validationType: "requiredField"
+      },
+    },
+    {
       accessorKey: 'dealer_fullname',
       header: 'Full Name',
       export: true,
@@ -460,6 +476,8 @@ const Dealers = () => {
               dataSet={dealerList}
               isLoading={isLoading}
               idName="dealer_id"
+              enableEdit={true}
+              enableRowSelection={true}
               handleSaveRow={handleSaveRow}
               // handlePrint={handlePrint}
               deletedata={deletedata}

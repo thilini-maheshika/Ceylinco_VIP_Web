@@ -438,6 +438,8 @@ const Users = () => {
               deletedata={deletedata}
               enableClickToCopy
               enableRowNumbers={false}
+              enableEdit={true}
+              enableRowSelection={true}
               enableRowVirtualization
               addButtonHeading="Add User"
               enableAddButton={true}

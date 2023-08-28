@@ -23,7 +23,7 @@ const imageSchema = Yup.mixed().test('image', 'Invalid image format', (value) =>
     return acceptedFormats.includes(value.type);
 });
 
-export default function AddFormModal(props) {
+export default function EditFormModal(props) {
     const [focusedField, setFocusedField] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -313,9 +313,9 @@ export default function AddFormModal(props) {
                                                 <FormControl style={{ width: '100%', marginBottom: '15px' }}>
                                                     <TextField
                                                         label={field.label}
-                                                        name={field.name}
+                                                        name={field.name }
                                                         type={field.type}
-                                                        value={formData.data[field.name] ? formData.data[field.name] : field.value}
+                                                        value={formData.data[field.name]}
                                                         onChange={handleChange}
                                                         error={!!formData.errors[field.name]}
                                                         helperText={formData.errors[field.name]}
@@ -353,13 +353,13 @@ export default function AddFormModal(props) {
                                                     />
                                                 </FormControl>
                                             )}
-                                             {field.type === 'number' && (
+                                            {field.type === 'number' && (
                                                 <FormControl style={{ width: '100%', marginBottom: '15px' }}>
                                                     <TextField
                                                         label={field.label}
                                                         name={field.name}
                                                         type={field.type}
-                                                        value={formData.data[field.name] || ''}
+                                                        value={formData.data[field.name] || field.value}
                                                         onChange={handleChange}
                                                         error={!!formData.errors[field.name]}
                                                         helperText={formData.errors[field.name]}
@@ -403,7 +403,7 @@ export default function AddFormModal(props) {
                                                         label={field.label}
                                                         name={field.name}
                                                         type={showPassword ? 'text' : 'password'}
-                                                        value={formData.data[field.name] || ''}
+                                                        value={formData.data[field.name] || field.value}
                                                         onChange={handleChange}
                                                         color="secondary"
                                                         error={!!formData.errors[field.name]}

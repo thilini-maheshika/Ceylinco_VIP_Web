@@ -9,11 +9,14 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import AddFormModal from '../Modal/AddFormModal';
 
+import DialogBox from '../../components/Alert/Confirm'
 
 function SimpleTable(props) {
     const [rowSelection, setRowSelection] = useState({});
     const tableInstanceRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [id, setId] = useState([]);
 
     const {
         columns,
@@ -83,7 +86,7 @@ function SimpleTable(props) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-              });
+            });
         }
     };
 
@@ -98,6 +101,16 @@ function SimpleTable(props) {
         setIsOpen(true);
     };
 
+    const handleConfirmClose= () => {
+        setOpen(false);
+        setId([])
+    };
+
+    const handleConfirmOpen= (id) => {
+        setOpen(true);
+        setId(id)
+    };
+
     const handleClose = () => {
         setIsOpen(false);
         setFormData({
@@ -108,7 +121,7 @@ function SimpleTable(props) {
 
 
     const formSubmit = (event) => {
-        event.preventDefault();
+        // event.preventDefault();
         handleSubmit(formData);
         handleClose();
     };
@@ -125,13 +138,25 @@ function SimpleTable(props) {
         pageSize: 10, //customize the default page size
     });
 
-    useEffect(() => {
-        //do something when the pagination state changes
-    }, [pagination.pageIndex, pagination.pageSize]);
-
-    const handleDeleteRow = (row) => {
-        console.log(row)
-    }
+    const handleDelete = () => {
+        const selectedRows = tableInstanceRef.current?.getSelectedRowModel().rows;
+        if (selectedRows && selectedRows.length > 0) {
+            console.log(selectedRows)
+            // Call the deletedata function with the selected rows
+            props.deletedata(selectedRows);
+            handleConfirmClose();
+        } else {
+            // No rows selected, show a message
+            toast.info('No rows selected for deletion.', {
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        }
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -151,34 +176,36 @@ function SimpleTable(props) {
                                 </Button>
                             </div>
                         )}
+                        {props.enableRowSelection && (
+                            <div>
+                                <Button
+                                    style={{ color: '#ffffff', backgroundColor: '#2b3642' }}
+                                    onClick={() => {
+                                        handleConfirmOpen(tableInstanceRef.current?.getSelectedRowModel().rows)
+                                    }}
+                                    startIcon={<DeleteOutlineOutlinedIcon />}
+                                    variant="contained"
+                                >
+                                    Delete
+                                </Button>
+                            </div>
+                        )}
+                        {props.enableExport && (
+                            <div>
+                                <Button style={{ color: '#ffffff', backgroundColor: '#2b3642' }} onClick={handleExportData} startIcon={<FileDownloadOutlinedIcon />} variant="contained">
+                                    CSV
+                                </Button>
+                            </div>
+                        )}
 
-                        <div>
-                            <Button
-                                style={{ color: '#ffffff', backgroundColor: '#2b3642' }}
-                                onClick={() => {
-                                    props.deletedata(tableInstanceRef.current?.getSelectedRowModel().rows);
-                                }}
-                                startIcon={<DeleteOutlineOutlinedIcon />}
-                                variant="contained"
-                            >
-                                Delete
-                            </Button>
-                        </div>
-
-                        <div>
-                            <Button style={{ color: '#ffffff', backgroundColor: '#2b3642' }} onClick={handleExportData} startIcon={<FileDownloadOutlinedIcon />} variant="contained">
-                                CSV
-                            </Button>
-                        </div>
-
-                        <Typography variant="h4">{tableHeading}</Typography>
+                        <Typography variant="h5">{tableHeading}</Typography>
                     </Box>
                 )}
-                enableEditing
+                enableEditing={props.enableEdit}
                 enablePagination={true}
                 positionPagination="top"
                 editingMode="row"
-                enableRowSelection
+                enableRowSelection={props.enableRowSelection}
                 state={{
                     isLoading: isLoading,
                     pagination
@@ -203,8 +230,10 @@ function SimpleTable(props) {
                     handleClose={handleClose}
                     dataSet={dataSet}
                     idName={idName}
+                    renderRowActionMenuItems={props.renderRowActionMenuItems}
                 />
             )}
+            <DialogBox open={open} desc="Are you sure you want to delete this payment?" title="Confirm Delete" buttonText="Delete" handleClose={handleConfirmClose} handleDelete={handleDelete} />
         </ThemeProvider>
     );
 }

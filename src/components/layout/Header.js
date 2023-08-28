@@ -10,7 +10,7 @@ import { Link, NavLink, useHistory } from 'react-router-dom';
 import styled from "styled-components";
 import Axios from 'axios';
 import config from '../../config';
-import { isAuthenticated, logout, getToken, getUserid } from "../../session";
+import { isAuthenticated, logout, getToken, getUserid, isLogged, getUserrole } from "../../session";
 
 const ButtonContainer = styled.div`
   .ant-btn-primary {
@@ -102,16 +102,15 @@ function Header({
     window.location.href = '/sign-in';
   }
 
-
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!isLogged()) {
       history.push('/sign-in');
-    }else{
+    } else {
       fetchData();
 
       // Periodic data refresh every 5 minutes
       const interval = setInterval(fetchData, 5 * 60 * 1000);
-  
+
       // Clean up the interval on component unmount
       return () => {
         clearInterval(interval);
@@ -162,13 +161,16 @@ function Header({
         <LogoutOutlined style={{ paddingRight: '8px' }} /> Logout
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="profile">
-        <Link to="/profile">
+      <Menu.Item key="account">
+        <Link to="/account">
           <UserOutlined style={{ paddingRight: '8px' }} /> Profile
         </Link>
       </Menu.Item>
     </Menu>
   );
+  
+  const cleanedName = name.replace(/[0-9]+$/, "").replace(/-/g, " ").replace("/", "");
+
 
   return (
     <>
@@ -179,7 +181,7 @@ function Header({
               <NavLink to="/">Dashboard</NavLink>
             </Breadcrumb.Item>
             <Breadcrumb.Item style={{ textTransform: "capitalize" }}>
-              {name.replace("/", "")}
+              {cleanedName}
             </Breadcrumb.Item>
           </Breadcrumb>
         </Col>
@@ -220,9 +222,9 @@ function Header({
           </Dropdown>
 
           {isAuthenticated ?
-            <> 
+            <>
               {userData.map((data) => (<Link to="/profile" className="menubar-right-side btn-sign-in"><span>{data.fullname}</span></Link>))} {/* use-rname button */}
-              Welcome! 
+              Welcome!
             </>
             :
             <Link to="/sign-in" className="btn-sign-in"><span>Sign in </span></Link>
