@@ -7,61 +7,74 @@ import {
 } from "antd";
 import Axios from 'axios';
 import { useEffect, useState } from "react";
+import { toast } from 'react-toastify';
 import { useHistory } from 'react-router-dom';
+import { getUserrole, logout, getToken } from "../../session";
+import config from '../../config';
 
 function Home() {
 
   const history = useHistory();
-  const [statistics, setStatistics] = useState([]);
-  const [statistics2, setStatistics2] = useState([]);
-  const [statistics3, setStatistics3] = useState([]);
-  const [statistics4, setStatistics4] = useState([]);
-  // const [loginID, setLoginID] = useState([]);
+  const [isLoading, setisLoading] = useState(true);
 
-  // useEffect(() => {
-  //   if (!localStorage.getItem('author')) {
-  //     history.push('/sign-in');
-  //   } else {
+  const [paymentCounts, setPaymentCounts] = useState([]);
+  const [paymentsum, setPaymentSum] = useState([]);
+  const [policyCounts, setPolicyCounts] = useState([]);
+  const [policysum, setPolicySum] = useState([]);
+  const [dealerCounts, setDealerCounts] = useState([]);
 
-  //     if (localStorage.getItem('author') !== 'admin') {
-  //       Axios.get(`http://localhost:3001/author/getauthorid/${localStorage.getItem('author')}`).then((respons) => {
-  //         // setLoginID(respons.data[0].author_id);
-  //         loadStatistics2(respons.data[0].author_id);
-  //         loadStatistics4(respons.data[0].author_id);
-  //       })
-  //     } else {
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-  //       loadStatistics();
-  //       loadStatistics3();
-  //     }
-  //   }
-  // }, [])
+  const fetchData = async () => {
+    try {
+      const [
+        PaymentCountResponse,
+        PaymentSumResponse,
+        PolicyCountResponse,
+        DealerCountResponse
+      ] = await Promise.all([
+        Axios.get(config.url + '/statistics/payment/count', { headers: { 'x-token': getToken() } }),
+        Axios.get(config.url + '/statistics/payment/sum', { headers: { 'x-token': getToken() } }),
+        Axios.get(config.url + '/statistics/policy/count', { headers: { 'x-token': getToken() } }),
+        Axios.get(config.url + '/statistics/dealer/count', { headers: { 'x-token': getToken() } }),
+      ]);
 
-  const loadStatistics = () => {
-    Axios.get('http://localhost:3001/statistics/view').then((respons) => {
-      setStatistics(respons.data[0]);
-    })
-  }
+      // You can directly update the state values without waiting for the whole block to complete.
+      setPaymentCounts(PaymentCountResponse.data);
+      setPaymentSum(PaymentSumResponse.data);
+      setPolicyCounts(PolicyCountResponse.data);
+      setDealerCounts(DealerCountResponse.data);
 
-  const loadStatistics3 = () => {
-    Axios.get('http://localhost:3001/statistics/viewAll').then((respons) => {
-      setStatistics3(respons.data[0]);
-    })
-  }
+      console.log(policyCounts)
 
-  const loadStatistics2 = (author_id) => {
-    console.log(author_id);
-    Axios.get(`http://localhost:3001/statistics/viewAuthor/${author_id}`).then((respons) => {
-      setStatistics2(respons.data[0]);
-    })
-  }
+    } catch (error) {
+      handleErrorResponse(error);
+    } finally {
+      setisLoading(false);
+    }
+};
 
-  const loadStatistics4 = (author_id) => {
-    console.log(author_id);
-    Axios.get(`http://localhost:3001/statistics/viewAuthorAll/${author_id}`).then((respons) => {
-      setStatistics4(respons.data[0]);
-    })
-  }
+  const handleErrorResponse = (error) => {
+    if (error.response) {
+      if (error.response.status === 401) {
+        window.location.reload();
+        logout();
+      } else {
+        toast.warn(error.response.data.error || 'An error occurred', {
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    }
+  };
 
   const { Title } = Typography;
 
@@ -90,7 +103,7 @@ function Home() {
       ></path>
     </svg>,
   ];
-  
+
   const cart = [
     <svg
       width="22"
@@ -108,55 +121,124 @@ function Home() {
       ></path>
     </svg>,
   ];
-  const count = [
+
+
+  const EditorCount = [
     {
-      today: "This Month Income",
-      title: `RS. ${statistics.sum}`,
+      today: "Total Policy Amount",
+      title: `Rs. ${paymentsum.totalSum }`,
       icon: dollor,
       bnb: "bnb2",
     },
     {
-      today: "This month Sales",
-      title: `${statistics.count}`,
-      icon: cart,
+      today: "This Month Total",
+      title: `${paymentsum.thisMonthPolicies}`,
+      icon: dollor,
       bnb: "bnb2",
     },
     {
-      today: "Total Income",
-      title: `Rs. ${statistics3.sum}`,
+      today: "This Year Total",
+      title: `${paymentsum.thisYearPolicies}`,
       icon: dollor,
       bnb: "redtext",
     },
     {
-      today: "Total Sales",
-      title: `${statistics3.count}`,
+      today: "Dealer Count",
+      title: `${dealerCounts.count}`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "Total Running Policies",
+      title: `${policyCounts.policyCount }`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "This Month Policies",
+      title: `${policyCounts.thisMonthPolicies}`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "This Year Policies",
+      title: `${policyCounts.thisYearPolicies}`,
+      icon: cart,
+      bnb: "redtext",
+    },
+    {
+      today: "Today Policies",
+      title: `${policyCounts.todayPolicies}`,
       icon: cart,
       bnb: "bnb2",
     },
   ];
 
-  const AuthorCount = [
+
+  const AdminCount = [
     {
-      today: "This Month Income",
-      title: `RS. ${statistics2.sum}`,
+      today: "Total Policy Amount",
+      title: `Rs. ${paymentsum.totalSum ? paymentsum.totalSum : 0 }`,
       icon: dollor,
       bnb: "bnb2",
     },
     {
-      today: "This Month Sale",
-      title: `${statistics2.count}`,
-      icon: cart,
+      today: "Today Total",
+      title: `Rs. ${paymentsum.todaySum ? paymentsum.todaySum : 0}`,
+      icon: dollor,
       bnb: "bnb2",
     },
     {
-      today: "Total Income",
-      title: `Rs. ${statistics4.sum}`,
+      today: "This Month Total",
+      title: `Rs. ${paymentsum.thisMonthSum ? paymentsum.thisMonthSum : 0}`,
+      icon: dollor,
+      bnb: "bnb2",
+    },
+    {
+      today: "This Year Total",
+      title: `Rs. ${paymentsum.thisYearSum ? paymentsum.thisYearSum : 0}`,
       icon: dollor,
       bnb: "redtext",
     },
     {
-      today: "Total Sale",
-      title: `${statistics4.count}`,
+      today: "Dealer Count",
+      title: `${dealerCounts.count ? dealerCounts.count : 0}`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "Total Running Policies",
+      title: `${policyCounts.policyCount ? policyCounts.policyCount : 0 }`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "Pending Policies",
+      title: `${paymentCounts.pendingCount ? paymentCounts.pendingCount : 0}`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "Confirmed Policies",
+      title: `${paymentCounts.confirmedCount ? paymentCounts.confirmedCount : 0}`,
+      icon: cart,
+      bnb: "redtext",
+    },
+    {
+      today: "Completed Policies",
+      title: `${paymentCounts.completedCount ? paymentCounts.completedCount : 0}`,
+      icon: cart,
+      bnb: "bnb2",
+    },
+    {
+      today: "have to Pay Commision",
+      title: `Rs. ${paymentsum.dealerPendingCommition ? paymentsum.dealerPendingCommition : 0}`,
+      icon: cart,
+      bnb: "redtext",
+    },
+    {
+      today: "Paid Commision",
+      title: `Rs. ${paymentsum.dealerCompletedCommition ? paymentsum.dealerCompletedCommition : 0}`,
       icon: cart,
       bnb: "bnb2",
     },
@@ -165,10 +247,10 @@ function Home() {
   return (
     <>
       <div className="layout-content">
-        {localStorage.getItem('author') === 'admin' ?
+        {getUserrole() === 1 ?
           <Row className="rowgap-vbox" gutter={[24, 0]}>
             <h1>Welcome! Ceylinco Collector</h1>
-            {/* {count.map((c, index) => (
+            {EditorCount.map((c, index) => (
               <Col
                 key={index}
                 xs={24}
@@ -194,12 +276,12 @@ function Home() {
                   </div>
                 </Card>
               </Col>
-            ))} */}
+            ))}
           </Row>
 
           :
           <Row className="rowgap-vbox" gutter={[24, 0]}>
-            {/* {AuthorCount.map((c, index) => (
+            {AdminCount.map((c, index) => (
               <Col
                 key={index}
                 xs={24}
@@ -225,7 +307,7 @@ function Home() {
                   </div>
                 </Card>
               </Col>
-            ))} */}
+            ))}
           </Row>
         }
       </div>

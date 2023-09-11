@@ -12,6 +12,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import AddFormModal from "../../components/Modal/AddFormModal";
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import PreviewIcon from '@mui/icons-material/Preview';
+import AttachEmailIcon from '@mui/icons-material/AttachEmail';
 
 import DialogBox from '../../components/Alert/Confirm'
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
@@ -25,12 +26,18 @@ const Policy = () => {
   const [policy, setPolicy] = useState(0);
   const fileInputRef = useRef();
 
+  const [isOpenEmail, setIsOpenEmail] = useState(false);
   const history = useHistory();
 
   const [open, setOpen] = useState(false);
   const [policyid, setPolicyid] = useState(0);
 
   const [paymentFormData, setPaymentFormData] = useState({
+    data: {},
+    errors: {},
+  });
+
+  const [emailFormData, setEmailFormData] = useState({
     data: {},
     errors: {},
   });
@@ -67,6 +74,11 @@ const Policy = () => {
     setPolicy(id)
   };
 
+  const handleOpenEmail = (id) => {
+    setIsOpenEmail(true);
+    setPolicy(id)
+  };
+
   const paymentFormSubmit = (event) => {
     // event.preventDefault();
     handlePaymentSubmit(event);
@@ -75,10 +87,22 @@ const Policy = () => {
   };
 
 
+  const emailFormSubmit = (event) => {
+    handleEmailSubmit(event)
+    console.log(event)
+    handleClose();
+  }
+
   const handleClose = () => {
     setIsOpen(false);
+    setIsOpenEmail(false)
     setPolicy(0)
     setPaymentFormData({
+      data: {},
+      errors: {},
+    });
+
+    setEmailFormData({
       data: {},
       errors: {},
     });
@@ -210,7 +234,7 @@ const Policy = () => {
     {
       accessorKey: 'policy_status',
       header: 'Status',
-      Cell: ({ renderedCellValue }) => <>{renderedCellValue === 1 ? "Active" : "Deactive"}</>,
+      Cell: ({ renderedCellValue }) => <>{renderedCellValue === 1 ? "Completed" : "Pending"}</>,
       editVariant: 'select',
       minSize: 90,
       maxSize: 360,
@@ -280,6 +304,123 @@ const Policy = () => {
       },
     },
   ], []);
+
+  const emailFormColumns = useMemo(() => [
+    {
+      accessorKey: 'subject',
+      header: 'Subject',
+      formFeild: {
+        isFormFeild: true,
+        type: "text",
+        xs: 12,
+        validationType: "requiredField"
+      },
+    },
+    {
+      accessorKey: 'message',
+      header: 'Message',
+      formFeild: {
+        isFormFeild: true,
+        type: "text",
+        xs: 12,
+        validationType: "requiredField"
+      },
+    },
+    {
+      accessorKey: 'sender',
+      header: 'Sender',
+      formFeild: {
+        isFormFeild: true,
+        type: "select",
+        xs: 6,
+        validationType: "requiredField"
+      },
+      editSelectOptions: [{
+        value: '1',
+        text: 'Both'
+      }, {
+        value: '2',
+        text: 'Dealer'
+      }, {
+        value: '3',
+        text: 'Customer'
+      }],
+      
+    },
+    {
+      accessorKey: 'attach',
+      header: 'File',
+      formFeild: {
+        isFormFeild: true,
+        type: "file",
+        validationType: "requiredField",
+        xs: 12,
+      },
+    },
+  ], []);
+
+  const handleEmailSubmit = async (event) => {
+    const { data } = event;
+    const emailData = {
+      policyid: policy,
+      subject: data.subject,
+      message: data.message,
+      sender: data.sender
+    };
+
+    try {
+      setisLoading(true);
+
+    const formData = new FormData();
+    formData.append('attach', event.data.attach); // Assuming 'image' is the field name for the image
+
+    for (const key in emailData) {
+      formData.append(key, emailData[key]);
+    }
+
+      const response = await Axios.put(config.url + '/policy/sendemail/' + policy, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'x-token': getToken(),
+        },
+      });
+
+      if (response.status === 200) {
+        fetchData();
+        setisLoading(false);
+        toast.success(response.data.message, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      } else if (response.status === 401) {
+        logout();
+      } else {
+        fetchData();
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        window.location.reload();
+        logout();
+      } else {
+        toast.warn(error.response ? error.response.data.error : "An error occurred.", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    } finally {
+      setisLoading(false);
+    }
+  };
 
   const handlePaymentSubmit = async (event) => {
     const { data } = event;
@@ -451,6 +592,7 @@ const Policy = () => {
 
 
   const addData = async (values) => {
+
     try {
       setisLoading(true);
       const response = await Axios.post(config.url + '/policy/create/', values, {
@@ -674,6 +816,12 @@ const Policy = () => {
                   }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <PreviewIcon /> View Policy
                   </MenuItem>,
+                  <MenuItem key={1} onClick={() => {
+                    handleOpenEmail(row.id)
+                    closeMenu();
+                  }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AttachEmailIcon /> Send Email
+                  </MenuItem>,
                   <MenuItem key={2} onClick={() => {
                     handleConfirmOpen(row.id)
                     closeMenu();
@@ -694,6 +842,18 @@ const Policy = () => {
             isOpen={isOpen}
             setFormData={setPaymentFormData}
             formSubmit={paymentFormSubmit}
+            handleClose={handleClose}
+          />
+        )}
+        {isOpenEmail && (
+          <AddFormModal
+            enableAddButton={true}
+            columns={emailFormColumns}
+            addButtonHeading="Send Email"
+            formData={emailFormData}
+            isOpen={isOpenEmail}
+            setFormData={setEmailFormData}
+            formSubmit={emailFormSubmit}
             handleClose={handleClose}
           />
         )}

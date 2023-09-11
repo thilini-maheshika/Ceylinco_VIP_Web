@@ -132,19 +132,21 @@ const Payments = () => {
       accessorKey: 'qutation',
       header: 'Qutation',
       Cell: ({ renderedCellValue }) => {
-        const fileExtension = renderedCellValue.split('.').pop().toLowerCase();
-        const fullUrl = config.url + '/policy/qutation/' + renderedCellValue;
+        if (renderedCellValue) {
+          const fileExtension = renderedCellValue.split('.').pop().toLowerCase();
+          const fullUrl = config.url + '/policy/qutation/' + renderedCellValue;
 
-        if (fileExtension === 'pdf') {
-          return (
-            <a href={fullUrl} download="file.pdf">
-              Download PDF
-            </a>
-          );
-        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-          return <img src={fullUrl} alt="Image" style={{ maxWidth: '100px', maxHeight: '100px' }} />;
-        } else {
-          return <>Unsupported File Type</>;
+          if (fileExtension === 'pdf') {
+            return (
+              <a href={fullUrl} download="file.pdf">
+                Download PDF
+              </a>
+            );
+          } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+            return <img src={fullUrl} alt="Image" style={{ maxWidth: '100px', maxHeight: '100px' }} />;
+          } else {
+            return <>Unsupported File Type</>;
+          }
         }
       },
       export: true,
@@ -307,9 +309,9 @@ const Payments = () => {
   const handleUpdateStatus = async () => {
     try {
       setisLoading(true);
-      
+
       const data = {
-        status : 3
+        status: 3
       }
 
       const response = await Axios.put(

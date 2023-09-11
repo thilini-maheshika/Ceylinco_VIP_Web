@@ -123,19 +123,22 @@ const Payments = () => {
       accessorKey: 'qutation',
       header: 'Qutation',
       Cell: ({ renderedCellValue }) => {
-        const fileExtension = renderedCellValue.split('.').pop().toLowerCase();
-        const fullUrl = config.url + '/policy/qutation/' + renderedCellValue;
 
-        if (fileExtension === 'pdf') {
-          return (
-            <a href={fullUrl} download="file.pdf">
-              Download PDF
-            </a>
-          );
-        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-          return <img src={fullUrl} alt="Image" style={{ maxWidth: '100px', maxHeight: '100px' }} />;
-        } else {
-          return <>Unsupported File Type</>;
+        if (renderedCellValue) {
+          const fileExtension = renderedCellValue.split('.').pop().toLowerCase();
+          const fullUrl = config.url + '/policy/qutation/' + renderedCellValue;
+
+          if (fileExtension === 'pdf') {
+            return (
+              <a href={fullUrl} download="file.pdf">
+                Download PDF
+              </a>
+            );
+          } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+            return <img src={fullUrl} alt="Image" style={{ maxWidth: '100px', maxHeight: '100px' }} />;
+          } else {
+            return <>Unsupported File Type</>;
+          }
         }
       },
       export: true,
@@ -371,7 +374,7 @@ const Payments = () => {
               enableRowVirtualization
               enableRowSelection={false}
               enableExport={false}
-              enableEdit={getUserrole() == 1 ? true : false }
+              enableEdit={getUserrole() == 1 ? true : false}
               renderRowActionMenuItems={({ row, closeMenu }) => (
                 [
                   <MenuItem key={2} onClick={() => {

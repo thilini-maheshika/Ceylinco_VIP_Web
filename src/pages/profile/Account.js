@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Axios from 'axios';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import config from '../../config';
-import { logout, getToken, getUserid } from "../../session";
+import { logout, getToken, getUserid, getUserrole } from "../../session";
 import AddFormModal from "../../components/Modal/AddFormModal";
 import EditFormModal from "../../components/Modal/EditFormModal";
 
@@ -60,7 +60,7 @@ const Profile = () => {
                         email: userResponse.data[0].email,
                     },
                 }));
-            }else{
+            } else {
                 window.location.reload();
                 logout();
             }
@@ -341,7 +341,7 @@ const Profile = () => {
             setisLoading(true);
 
             const response = await Axios.delete(
-                config.url + '/user/me/delete' + setUserid,
+                config.url + '/user/me/delete/' + userid,
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -359,12 +359,14 @@ const Profile = () => {
                     draggable: true,
                     progress: undefined,
                 });
-
+                // window.location.reload();
+                // logout();
                 fetchData();
                 setUserid(0);
                 handleClose();
             } else if (response.status === 401) {
-                // Handle unauthorized access if needed
+                // window.location.reload();
+                // logout();
             } else {
                 toast.warn('Delete Failed', {
                     position: toast.POSITION.BOTTOM_RIGHT,
@@ -378,7 +380,8 @@ const Profile = () => {
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
-                // Handle unauthorized access if needed
+                window.location.reload();
+                logout();
             } else {
                 toast.error('An error occurred', {
                     position: toast.POSITION.BOTTOM_RIGHT,
@@ -424,16 +427,20 @@ const Profile = () => {
 
                                 <Divider sx={{ margin: '1rem 0' }} />
 
-
-                                <Grid container spacing={2} style={{ marginTop: '20px' }}>
-                                    <a onClick={() => { handleOpen(user.userid) }} >Change Password</a>
-                                </Grid>
-                                <Grid container spacing={2} style={{ marginTop: '20px' }}>
-                                    <a onClick={() => { handleOpenEdit(user.userid) }} >Change Details</a>
-                                </Grid>
-                                <Grid container spacing={2} style={{ marginTop: '20px' }}>
-                                    <a onClick={() => { handleConfirmOpen(user.userid) }} >Deactive Account</a>
-                                </Grid>
+                                {getUserrole() === 1 ?
+                                    <Grid container spacing={2} style={{ marginTop: '20px' }}>
+                                        <a onClick={() => { handleConfirmOpen(user.userid) }} >Deactive Account</a>
+                                    </Grid>
+                                    :
+                                    <>
+                                        <Grid container spacing={2} style={{ marginTop: '20px' }}>
+                                            <a onClick={() => { handleOpen(user.userid) }} >Change Password</a>
+                                        </Grid>
+                                        <Grid container spacing={2} style={{ marginTop: '20px' }}>
+                                            <a onClick={() => { handleOpenEdit(user.userid) }} >Change Details</a>
+                                        </Grid>
+                                    </>
+                                }
                             </Paper>
 
                         ) : (

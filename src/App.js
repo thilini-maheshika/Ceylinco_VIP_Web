@@ -13,6 +13,8 @@ import Payment from "./pages/payment/paymentMain";
 import SinglePolicy from "./pages/policy/SinglePolicy";
 import Company from "./pages/company/Company";
 import Account from "./pages/profile/Account";
+import FogetPassword from "./pages/auth/FogotPassword";
+import BankDetails from "./pages/dealer/BankDetails";
 import { ToastContainer } from "react-toastify";
 
 
@@ -33,6 +35,8 @@ function App() {
       />
       <Switch>
         <Route path="/sign-in" exact component={SignIn} />
+        <Route path="/forget-password" exact component={FogetPassword} />
+        <Route path="/new-password" exact component={NotFoundPage} />
         <Route path="/404" exact component={NotFoundPage} />
         <Main>
           <Route exact path="/dashboard" component={Home} />
@@ -44,6 +48,7 @@ function App() {
           <Route exact path="/company" component={Company} />
           <Route exact path="/account" component={Account} />
           <Route exact path="/single-policy/:id" component={SinglePolicy} />
+          <Route exact path="/bank-details/:id" component={BankDetails} />
           {/* <Redirect from="*" to="/" /> */}
         </Main>
       </Switch>

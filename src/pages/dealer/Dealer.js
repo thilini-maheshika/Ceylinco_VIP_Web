@@ -6,13 +6,16 @@ import React, { useEffect, useState, useMemo } from 'react';
 import config from '../../config';
 import { logout, getToken } from "../../session";
 import SimpleTable from '../../components/Table/SimpleTable';
-
-
+import { MenuItem } from "@mui/material";
+import PreviewIcon from '@mui/icons-material/Preview';
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 const Dealers = () => {
   const [dealerList, setdealerList] = useState([]);
   const [companyList, setCompanyList] = useState([]);
   const [isLoading, setisLoading] = useState(true);
+
+  const history = useHistory();
 
   useEffect(() => {
     fetchData();
@@ -487,6 +490,16 @@ const Dealers = () => {
               addButtonHeading="Add Dealer"
               enableAddButton={false}
               handleSubmit={handleSubmit}
+              renderRowActionMenuItems={({ row, closeMenu }) => (
+                [
+                  <MenuItem key={1} onClick={() => {
+                    history.push(`/bank-details/${row.id}`);
+                    closeMenu();
+                  }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <PreviewIcon /> View Bank Details
+                  </MenuItem>,
+                ]
+              )}
             />
           </Col>
         </Row>

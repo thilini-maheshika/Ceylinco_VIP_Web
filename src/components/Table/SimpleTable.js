@@ -233,7 +233,7 @@ function SimpleTable(props) {
                     renderRowActionMenuItems={props.renderRowActionMenuItems}
                 />
             )}
-            <DialogBox open={open} desc="Are you sure you want to delete this payment?" title="Confirm Delete" buttonText="Delete" handleClose={handleConfirmClose} handleDelete={handleDelete} />
+            <DialogBox open={open} desc="Are you sure you want to delete?" title="Confirm Delete" buttonText="Delete" handleClose={handleConfirmClose} handleDelete={handleDelete} />
         </ThemeProvider>
     );
 }

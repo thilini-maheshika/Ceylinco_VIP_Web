@@ -82,19 +82,6 @@ function Sidenav({ color }) {
         </Menu.Item>
         {getUserrole() == 1 ?
           <>
-            <Menu.Item key="3">
-              <NavLink to="/income">
-                <span
-                  className="icon"
-                  style={{
-                    background: page === "income" ? color : "",
-                  }}
-                >
-                  <DownloadOutlined />
-                </span>
-                <span className="label">Income</span>
-              </NavLink>
-            </Menu.Item>
 
             <Menu.Item key="4">
               <NavLink to="/dealer">
